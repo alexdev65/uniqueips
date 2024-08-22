@@ -48,6 +48,7 @@ public class MultiThreadedFileProcessor implements FileProcessor {
                     log.println("Stop exception caught in processor");
                 } else {
                     log.println("Unexpected exception " + e);
+                    throw new RuntimeException(e);
                 }
             } finally {
                 taskManager.shutdownGracefully();
