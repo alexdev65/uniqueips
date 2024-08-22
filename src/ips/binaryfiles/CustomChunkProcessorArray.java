@@ -3,6 +3,7 @@ package ips.binaryfiles;
 import ips.IpParser;
 import ips.IpSet;
 import ips.Stat;
+import ips.Utils;
 
 import java.nio.ByteBuffer;
 
@@ -24,9 +25,10 @@ public class CustomChunkProcessorArray extends CustomChunkProcessorBase {
     }
 
     private void ensureCapacity(ByteBuffer buffer) {
-        int estimatedIps = buffer.limit() / 8;
-        if (ips.length < estimatedIps) {
-            ips = new int[estimatedIps + 1000];
+        final int MIN_IP_STRING_SIZE = 8; //< "1.2.3.4\n"
+        int maxExpectedIps = buffer.limit() / MIN_IP_STRING_SIZE;
+        if (ips.length < maxExpectedIps) {
+            ips = new int[maxExpectedIps + 1000]; //< plus some extra for not reallocating too often
         }
     }
 
@@ -44,7 +46,7 @@ public class CustomChunkProcessorArray extends CustomChunkProcessorBase {
     protected void processLine() {
         int[] octets = ipv4.octets;
         ipParser.ipToOctetsFast(octets, lineBytes, 0, lineLength);
-        ips[ipsLen++] = (octets[0] << 24) + (octets[1] << 16) + (octets[2] << 8) + octets[3];
+        ips[ipsLen++] = Utils.octetsToInt(octets);
         lines++;
     }
 

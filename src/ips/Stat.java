@@ -3,7 +3,7 @@ package ips;
 import java.io.PrintStream;
 
 /**
- * Keeps statistics for the data being processed. Stops processing when maximum number of lines is reached.
+ * Keeps and logs statistics for the data being processed. Stops processing when maximum number of lines is reached.
  */
 public class Stat {
     private final Runtime runtime = Runtime.getRuntime();
@@ -12,13 +12,14 @@ public class Stat {
     private final long startTime = System.nanoTime();
     private long prevTime = startTime;
     // defines how often current stats will be logged
-    private final long linesPeriod = 1_000_000;
+    private final long linesPerStatsPrint;
     private final long maxLines;
     private final PrintStream log;
 
-    public Stat(long maxLines, PrintStream log) {
+    public Stat(long maxLines, PrintStream log, long linesPerStatsPrint) {
         this.maxLines = maxLines;
         this.log = log;
+        this.linesPerStatsPrint = linesPerStatsPrint;
     }
 
     public synchronized void update(long lines, long uniqueCount) throws StopException {

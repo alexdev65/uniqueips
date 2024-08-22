@@ -13,10 +13,7 @@ public interface IpSet {
         int[] octets = ip.octets;
         for (int i = 0; i < ipsLen; i++) {
             int intIp = ips[i];
-            octets[0] = intIp >>> 24;
-            octets[1] = (intIp >> 16) & 0xff;
-            octets[2] = (intIp >> 8) & 0xff;
-            octets[3] = intIp & 0xff;
+            Utils.intToOctets(intIp, octets);
             add(ip);
         }
     }

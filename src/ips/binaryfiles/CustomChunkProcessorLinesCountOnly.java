@@ -10,13 +10,11 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class CustomChunkProcessorLinesCountOnly extends ChunkProcessor {
     private long lines = 0;
-    private final AtomicLong totalLines;
     private final Stat stat;
 
-    public CustomChunkProcessorLinesCountOnly(ByteBufferProvider byteBufferProvider, AtomicLong totalLines,
+    public CustomChunkProcessorLinesCountOnly(ByteBufferProvider byteBufferProvider,
                                               Stat stat) {
         super(byteBufferProvider);
-        this.totalLines = totalLines;
         this.stat = stat;
     }
 
@@ -39,7 +37,6 @@ public class CustomChunkProcessorLinesCountOnly extends ChunkProcessor {
 
     @Override
     protected void finished() {
-        totalLines.addAndGet(lines);
 //        System.out.println("Thread " + Thread.currentThread().getName() + " finished. Sum = " + sum
 //                + ", cnt = " + cnt + ", lines = " + lines);
     }

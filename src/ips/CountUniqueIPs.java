@@ -36,14 +36,16 @@ public class CountUniqueIPs {
         // only needed if we want to limit the number of lines to read, at least this number of lines will be read:
         final long maxLines = 200_000_000_000L;
 
-        final int AVG_BYTES_PER_LINE = 14;
+        final int MAX_BYTES_PER_LINE = 16; //< "255.255.255.255\n"
         // only needed if we want to limit the number of bytes to read
         // (by default it exceeds the expected maxLines bytes, which makes this limit essentially inactive)
-        long fileSizeLimit = maxLines * (AVG_BYTES_PER_LINE + 3);
+        long fileSizeLimit = maxLines * MAX_BYTES_PER_LINE;
 
-        int timeoutSec = 3600; //< processing timeout
+        int timeoutSec = 3600; //< processing timeout in seconds
 
         ChunkProcessorChoice chunkProcessorChoice = ChunkProcessorChoice.ARRAY;
+
+        long linesPerStatsPrint = 1_000_000;
 
     }
 
@@ -65,12 +67,11 @@ public class CountUniqueIPs {
         //Settings settings = new Settings();
         Supplier<IpSetLongSavable> ipSetSupplier = IpSetLongSavable::new;
         var ipv4Set = ipSetSupplier.get();
-        var stat = new Stat(settings.maxLines, log);
+        var stat = new Stat(settings.maxLines, log, settings.linesPerStatsPrint);
         var ipParser = new IpParser();
-        var totalLines = new AtomicLong();
         ChunkProcessorFactory processorFactory = (byteBufferProvider) -> switch (settings.chunkProcessorChoice) {
             case IP_SET -> new CustomChunkProcessorIpSet(byteBufferProvider, ipv4Set, stat, ipParser, ipSetSupplier);
-            case LINE_COUNT_ONLY -> new CustomChunkProcessorLinesCountOnly(byteBufferProvider, totalLines, stat);
+            case LINE_COUNT_ONLY -> new CustomChunkProcessorLinesCountOnly(byteBufferProvider, stat);
             case ARRAY -> new CustomChunkProcessorArray(byteBufferProvider, ipv4Set, stat, ipParser);
         };
 

@@ -6,10 +6,12 @@ import ips.Ipv4;
 import ips.Stat;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Each chunk (of file) is processed here and all IPs are merged to the global IP set
  * For the sake of optimization this class assumes that EOL is '\n'
+ * Possible improvements: support different line endings
  */
 public abstract class CustomChunkProcessorBase extends ChunkProcessor {
     protected long lines = 0;
@@ -38,15 +40,23 @@ public abstract class CustomChunkProcessorBase extends ChunkProcessor {
         prepareForBufferProcessing(buffer);
         final byte EOL = (byte)'\n';
         final long previousLines = lines;
-        byte b = EOL;
-        while (buffer.hasRemaining()) {
-            b = buffer.get();
-            if (b == EOL) {
-                processLine();
-                lineLength = 0;
-            } else {
-                lineBytes[lineLength++] = b;
+        try {
+            byte b;
+            while (buffer.hasRemaining()) {
+                b = buffer.get();
+                if (b == EOL) {
+                    processLine();
+                    lineLength = 0;
+                } else {
+                    lineBytes[lineLength++] = b;
+                }
             }
+        } catch (IndexOutOfBoundsException e) {
+            if (lineLength >= lineBytes.length) {
+                throw new RuntimeException("Line to parse is too long. Probably data format is incorrect." +
+                        " Line '" + new String(lineBytes, StandardCharsets.ISO_8859_1) + "...'", e);
+            }
+            throw e;
         }
         // there may be the last line without EOL character
         if (lineLength > 0) {

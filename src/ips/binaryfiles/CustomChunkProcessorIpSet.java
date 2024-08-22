@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 /**
  * See CustomChunkProcessorBase.
- * Uses IpSet as temporary storage
+ * Uses IpSet as temporary storage. Usually consumes more space compared to array storage.
  */
 public class CustomChunkProcessorIpSet extends CustomChunkProcessorBase {
     private IpSet ipSet;
@@ -25,7 +25,7 @@ public class CustomChunkProcessorIpSet extends CustomChunkProcessorBase {
 
     @Override
     protected void prepareForBufferProcessing(ByteBuffer buffer) {
-
+        // nothing to prepare
     }
 
     @Override

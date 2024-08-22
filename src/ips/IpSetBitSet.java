@@ -6,7 +6,7 @@ import java.util.BitSet;
  * An implementation of a set of IP v4 addresses that uses BitSet as bit fields
  */
 public class IpSetBitSet implements IpSet {
-    // the innermost array represents bits for 256 * 256 values
+    // the innermost array represents bits for 256 * 256 values (the first two octets)
     protected final BitSet[][] ipSet = new BitSet[256][256];
     // Keeping unique count at run time may degrade performance
     private static final boolean RUNTIME_UNIQUE_COUNT = false;
@@ -17,10 +17,10 @@ public class IpSetBitSet implements IpSet {
         int[] octets = ip.octets;
         BitSet[] net8 = ipSet[octets[0]];
 
-        int num1 = octets[1];
-        BitSet net16 = net8[num1];
+        int octet1 = octets[1];
+        BitSet net16 = net8[octet1];
         if (net16 == null) {
-            net16 = net8[num1] = new BitSet(256 * 256);
+            net16 = net8[octet1] = new BitSet(256 * 256);
         }
         int bitIndex = (octets[2] << 8) + octets[3];
         if (RUNTIME_UNIQUE_COUNT) {
