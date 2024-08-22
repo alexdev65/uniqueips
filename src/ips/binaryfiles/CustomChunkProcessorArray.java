@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 
 /**
  * See CustomChunkProcessorBase.
- * Uses array of integers as temporary storage
+ * Uses array of integers as temporary storage. It uses less memory and is also faster compared to IpSet storage.
  */
 public class CustomChunkProcessorArray extends CustomChunkProcessorBase {
     // Array for storing IP addresses as integers

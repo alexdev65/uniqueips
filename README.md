@@ -1,6 +1,10 @@
-The file with the main method to run is CountUniqueIPs.java. 
-Provide a single argument: a file with IPs. 
+The fastest way to calculate number of unique IP v4 addresses in a file.
+
+Run class ips.CountUniqueIPs. 
+Provide a single argument: a file that contains IPs. 
 The file must have the following format: lines are separated by LF, and each line contains an IP address like 1.2.3.4 without any additional characters.
+
+It's written in pure Java (16+) without any external libraries.
 
 There are several implementations of some of the classes and methods. 
 Some of the most optimized implementations don't check the format correctness. There are also some settings that can be configured in the main file, such as bufferSize, numThreads, etc.

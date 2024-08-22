@@ -37,7 +37,7 @@ public abstract class CustomChunkProcessorBase extends ChunkProcessor {
     protected void processBuffer(ByteBuffer buffer) {
         prepareForBufferProcessing(buffer);
         final byte EOL = (byte)'\n';
-        long savedLines = lines;
+        final long previousLines = lines;
         byte b = EOL;
         while (buffer.hasRemaining()) {
             b = buffer.get();
@@ -48,20 +48,26 @@ public abstract class CustomChunkProcessorBase extends ChunkProcessor {
                 lineBytes[lineLength++] = b;
             }
         }
-
+        // there may be the last line without EOL character
         if (lineLength > 0) {
             processLine();
             lineLength = 0;
         }
         syncToGlobalSet();
         clearSet();
-        stat.update(lines - savedLines, globalSet.getCachedUniqueCount());
+        stat.update(lines - previousLines, globalSet.getCachedUniqueCount());
     }
 
-
+    // executed at the beginning of the buffer processing
     protected abstract void prepareForBufferProcessing(ByteBuffer buffer);
+
+    // called each time array lineBytes is filled with a complete line
     protected abstract void processLine();
+
+    // synchronize locally parsed IPs to the global set of IPs
     protected abstract void syncToGlobalSet();
+
+    // clears locally parsed IPs
     protected abstract void clearSet();
 
     @Override
