@@ -44,7 +44,7 @@ public class Stat {
         }
     }
 
-    public long getLineCount() {
+    public synchronized long getLineCount() {
         return lineCount;
     }
 }
