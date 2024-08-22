@@ -24,12 +24,13 @@ public class Stat {
 
     public synchronized void update(long lines, long uniqueCount) throws StopException {
         lineCount += lines;
-        if (lineCount - lastReportLineCount >= linesPeriod) {
+        long linesSinceLastReport = lineCount - lastReportLineCount;
+        if (linesSinceLastReport >= linesPerStatsPrint) {
             lastReportLineCount = lineCount;
             //runtime.gc();
             long curTime = System.nanoTime();
             double elapsedSec = ((double) (curTime - startTime)) / 1e9;
-            long speed = (long) (linesPeriod * 1e9 / (curTime - prevTime));
+            long speed = (long) (linesSinceLastReport * 1e9 / (curTime - prevTime));
             prevTime = curTime;
             long totMem = runtime.totalMemory();
             long usedMem = totMem - runtime.freeMemory();
