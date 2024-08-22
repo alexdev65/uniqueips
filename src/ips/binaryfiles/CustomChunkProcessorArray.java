@@ -9,29 +9,19 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Each chunk (of file) is processed here and all IPs are merged to the global IP set
- * For the sake of optimization this class assumes that EOL is '\n'
+ * See CustomChunkProcessorBase.
+ * Uses array of integers as temporary storage
  */
-public class CustomChunkProcessorArray extends ChunkProcessor {
-    private long lines = 0;
-    private final AtomicLong totalLines;
+public class CustomChunkProcessorArray extends CustomChunkProcessorBase {
+    // Array for storing IP addresses as integers
+    // We preallocate some storage though it's not required (can be empty). Value 1_250_000 is enough for 10M bytes buffer
     private int[] ips = new int[1_250_000];
+    // Number of elements in the array
     private int ipsLen = 0;
-    private final IpSet globalSet;
-    private final Stat stat;
-    private final IpParser ipParser;
-    // This must be enough to contain each file line
-    private final byte[] lineBytes = new byte[100];
-    private int lineLength = 0;
-    private final Ipv4 ipv4 = new Ipv4();
 
     public CustomChunkProcessorArray(ByteBufferProvider byteBufferProvider, AtomicLong totalLines,
                                      IpSet globalSet, Stat stat, IpParser ipParser) {
-        super(byteBufferProvider);
-        this.totalLines = totalLines;
-        this.globalSet = globalSet;
-        this.stat = stat;
-        this.ipParser = ipParser;
+        super(byteBufferProvider, totalLines, globalSet, stat, ipParser);
         clearSet();
     }
 
@@ -42,50 +32,27 @@ public class CustomChunkProcessorArray extends ChunkProcessor {
         }
     }
 
-    /**
-     * Split into lines, each line is parsed to IP and the IP is added to an IP set
-     * @param buffer input buffer of a part of the file
-     */
     @Override
-    protected void processBuffer(ByteBuffer buffer) {
+    protected void prepareForBufferProcessing(ByteBuffer buffer) {
         ensureCapacity(buffer);
-        final byte EOL = (byte)'\n';
-        long savedLines = lines;
-        byte b = EOL;
-        while (buffer.hasRemaining()) {
-            b = buffer.get();
-            if (b == EOL) {
-                processLine();
-                lineLength = 0;
-            } else {
-                lineBytes[lineLength++] = b;
-            }
-        }
-
-        if (lineLength > 0) {
-            processLine();
-            lineLength = 0;
-        }
-        globalSet.add(ips, ipsLen);
-        clearSet();
-        stat.update(lines - savedLines, 0);
     }
 
-    private void processLine() {
+    @Override
+    protected void syncToGlobalSet() {
+        globalSet.add(ips, ipsLen);
+    }
+
+    @Override
+    protected void processLine() {
         int[] octets = ipv4.octets;
         ipParser.ipToOctetsFast(octets, lineBytes, 0, lineLength);
         ips[ipsLen++] = (octets[0] << 24) + (octets[1] << 16) + (octets[2] << 8) + octets[3];
         lines++;
     }
 
-    private void clearSet() {
+    @Override
+    protected void clearSet() {
         ipsLen = 0;
     }
 
-    @Override
-    protected void finished() {
-        totalLines.addAndGet(lines);
-        globalSet.add(ips, ipsLen);
-        //System.out.println("Thread " + Thread.currentThread().getName() + " finished. lines = " + lines);
-    }
 }

@@ -15,11 +15,10 @@ import java.util.function.Supplier;
  */
 public class CountUniqueIPs {
 
-    private static final DecimalFormat decimalFormatWithThousands;
-    static {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
-        symbols.setGroupingSeparator('_');
-        decimalFormatWithThousands = new DecimalFormat("####,###", symbols);
+    public enum ChunkProcessorChoice {
+        ARRAY,
+        IP_SET,
+        LINE_COUNT_ONLY,
     }
 
     public static class Settings {
@@ -31,6 +30,7 @@ public class CountUniqueIPs {
         final long maxLines = 200_000_000_000L;
         long fileSizeLimit = maxLines * 120L / 7L; //< only needed if we want to limit number of bytes to read
         int timeoutSec = 3600; //< processing timeout
+        ChunkProcessorChoice chunkProcessorChoice = ChunkProcessorChoice.ARRAY;
 
     }
 
@@ -49,10 +49,12 @@ public class CountUniqueIPs {
         var stat = new Stat(settings.maxLines, log);
         var ipParser = new IpParser();
         var totalLines = new AtomicLong();
-        ChunkProcessorFactory processorFactory = (byteBufferProvider) -> new
-                //CustomChunkProcessor(byteBufferProvider, totalLines, ipv4Set, stat, ipParser, ipSetSupplier);
-                //CustomChunkProcessorLinesCountOnly(byteBufferProvider, totalLines, stat);
-                CustomChunkProcessorArray(byteBufferProvider, totalLines, ipv4Set, stat, ipParser);
+        ChunkProcessorFactory processorFactory = (byteBufferProvider) -> switch (settings.chunkProcessorChoice) {
+            case IP_SET -> new CustomChunkProcessorIpSet(byteBufferProvider, totalLines, ipv4Set, stat, ipParser, ipSetSupplier);
+            case LINE_COUNT_ONLY -> new CustomChunkProcessorLinesCountOnly(byteBufferProvider, totalLines, stat);
+            case ARRAY -> new CustomChunkProcessorArray(byteBufferProvider, totalLines, ipv4Set, stat, ipParser);
+            default -> throw new RuntimeException("Unsupported chunk processor choice " + settings.chunkProcessorChoice);
+        };
 
         FileProcessor fileProcessor = settings.numThreads == 0 ?
                 new SingleThreadedFileProcessor(settings.bufferSize, processorFactory, settings.fileSizeLimit, log) :
@@ -68,7 +70,7 @@ public class CountUniqueIPs {
             fileProcessor.processFile(fileName);
 
             double elapsed = ((double)(System.nanoTime() - startTime)) / 1e9;
-            log.println("Total lines = " + decimalFormatWithThousands.format(totalLines.get()) +
+            log.println("Total lines = " + Utils.decimalFormatWithThousands.format(totalLines.get()) +
                     ", elapsed = " + elapsed);
 
             long unique = printRecalcUniqueCount(ipv4Set, log);
@@ -77,7 +79,7 @@ public class CountUniqueIPs {
 
             long usedMem = runtime.totalMemory() - runtime.freeMemory();
             log.printf("Unique = %s, elapsed = %.6f s, used mem = %.3f Mb%n",
-                    decimalFormatWithThousands.format(unique), elapsed, ((double)usedMem) / 1e9);
+                    Utils.decimalFormatWithThousands.format(unique), elapsed, ((double)usedMem) / 1e9);
 
             return unique;
         } catch (IOException e) {
@@ -98,7 +100,7 @@ public class CountUniqueIPs {
         long uniqueRecalc = ipSet.calcUnique();
         long recalcElapsed = System.nanoTime() - recalcStartTime;
         log.printf("Recalculated uniques = %s, time = %.3s%n",
-                decimalFormatWithThousands.format(uniqueRecalc), recalcElapsed / 1e9);
+                Utils.decimalFormatWithThousands.format(uniqueRecalc), recalcElapsed / 1e9);
         return uniqueRecalc;
     }
 
