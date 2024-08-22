@@ -4,9 +4,6 @@ import ips.binaryfiles.*;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -24,17 +21,31 @@ public class CountUniqueIPs {
     // Custom settings
     public static class Settings {
 
-        int bufferSize = 10 * 1024 * 1024; //< file read buffer size in bytes
-        int numThreads = Runtime.getRuntime().availableProcessors() * 2; //< number of additional threads, >= 0
+        final int MB = 1024 * 1024;
+        int bufferSize = 10 * MB; //< file read buffer size in bytes
+
+        // number of additional threads, >= 0. Zero means single threading
+        int numThreads = Runtime.getRuntime().availableProcessors() * 2;
+
         // only needed if we want to limit number of lines to read, at least this number of lines will be read:
-        final long maxLines = 200_000_000_000L;
-        long fileSizeLimit = maxLines * 120L / 7L; //< only needed if we want to limit number of bytes to read
+        final long maxLines = 300_000_000L;
+
+        final int AVG_BYTES_PER_LINE = 14;
+        // only needed if we want to limit number of bytes to reaВ (by default it exceeds expected max lines bytes)
+        long fileSizeLimit = maxLines * (AVG_BYTES_PER_LINE + 3);
+
         int timeoutSec = 3600; //< processing timeout
+
         ChunkProcessorChoice chunkProcessorChoice = ChunkProcessorChoice.ARRAY;
 
     }
 
     public static void main(String[] args) {
+        if (args.length != 1) {
+            System.err.println("Incorrect arguments. Expected arguments:  <fileName>");
+            System.err.println("    where <fileName> is path and name of file that contains IP v4 addresses");
+            System.exit(1);
+        }
         String fileName = args[0];
 
         Settings settings = new Settings();
