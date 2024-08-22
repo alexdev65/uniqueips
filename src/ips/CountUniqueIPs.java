@@ -10,7 +10,6 @@ import ips.binaryfiles.SingleThreadedFileProcessor;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
@@ -45,7 +44,7 @@ public class CountUniqueIPs {
 
         ChunkProcessorChoice chunkProcessorChoice = ChunkProcessorChoice.ARRAY;
 
-        long linesPerStatsPrint = 1_000_000;
+        long linesPerStatsPrint = 10_000_000;
 
     }
 

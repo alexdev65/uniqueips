@@ -10,11 +10,14 @@ public class Stat {
     private long lineCount = 0;
     private long lastReportLineCount = 0;
     private final long startTime = System.nanoTime();
-    private long prevTime = startTime;
     // defines how often current stats will be logged
     private final long linesPerStatsPrint;
     private final long maxLines;
     private final PrintStream log;
+    private long prevSpeedTime = startTime;
+    private long prevSpeedLines = 0;
+    private static final long speedMeasureTimeNs = 1_000_000_000;
+    private long speed = 0;
 
     public Stat(long maxLines, PrintStream log, long linesPerStatsPrint) {
         this.maxLines = maxLines;
@@ -30,13 +33,19 @@ public class Stat {
             //runtime.gc();
             long curTime = System.nanoTime();
             double elapsedSec = ((double) (curTime - startTime)) / 1e9;
-            long speed = (long) (linesSinceLastReport * 1e9 / (curTime - prevTime));
-            prevTime = curTime;
+            if (curTime - prevSpeedTime >= speedMeasureTimeNs) {
+                speed = (long) ((lineCount - prevSpeedLines) * 1e9 / (curTime - prevSpeedTime));
+                prevSpeedTime = curTime;
+                prevSpeedLines = lineCount;
+            }
+            long avgSpeed = (long) ((lineCount) * 1e9 / (curTime - startTime));
             long totMem = runtime.totalMemory();
             long usedMem = totMem - runtime.freeMemory();
-            log.printf("Lines=%10d, unique=%10d, elapsed=%7.3fs, mem=%4dM, spd=%5d kl/s" +
+            log.printf("Lines=%13s, unique=%13s, elapsed=%.1fs, mem=%4dM, spd=%6d kl/s, avg.spd=%6d kl/s" +
                             ", tot mem=%4dM, max mem=%5dM%n",
-                    lineCount, uniqueCount, elapsedSec, usedMem / 1_000_000, speed / 1000,
+                    Utils.decimalFormatWithThousands.format(lineCount),
+                    Utils.decimalFormatWithThousands.format(uniqueCount),
+                    elapsedSec, usedMem / 1_000_000, speed / 1000, avgSpeed / 1000,
                     totMem / 1_000_000, runtime.maxMemory() / 1_000_000);
             if (lineCount >= maxLines) {
                 throw new StopException();

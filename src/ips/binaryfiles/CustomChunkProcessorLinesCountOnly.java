@@ -3,7 +3,6 @@ package ips.binaryfiles;
 import ips.Stat;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Only calculates number of lines. Useful to compare performance.
