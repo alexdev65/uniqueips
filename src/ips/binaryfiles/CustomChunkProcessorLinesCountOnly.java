@@ -44,7 +44,7 @@ public class CustomChunkProcessorLinesCountOnly extends ChunkProcessor {
     @Override
     protected void finished() {
         totalLines.addAndGet(lines);
-        System.out.println("Thread " + Thread.currentThread().getName() + " finished. Sum = " + sum
-                + ", cnt = " + cnt + ", lines = " + lines);
+//        System.out.println("Thread " + Thread.currentThread().getName() + " finished. Sum = " + sum
+//                + ", cnt = " + cnt + ", lines = " + lines);
     }
 }

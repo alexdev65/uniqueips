@@ -1,6 +1,7 @@
 package ips.binaryfiles;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -17,22 +18,24 @@ public class FileChunkReader implements ByteBufferProvider {
     private final long fileSize;
     private int nextBytesWithoutEOL;
     private static final int SLICE_SIZE = 128;
+    private final PrintStream log;
 
-    public FileChunkReader(FileChannel fileChannel, long bufferSize, long fileSizeLimit) throws IOException {
+    public FileChunkReader(FileChannel fileChannel, long bufferSize, long fileSizeLimit, PrintStream log) throws IOException {
         this.fileChannel = fileChannel;
         this.bufferSize = bufferSize;
         totalFileSize = fileChannel.size();
         this.fileSize = Math.min(totalFileSize, fileSizeLimit);
+        this.log = log;
     }
 
     @Override
     public synchronized MappedByteBuffer getNextBuffer() throws IOException {
         if (currentPosition >= fileSize) {
-            System.out.println("cur pos " + currentPosition + " >= file size " + fileSize);
+            log.println("cur pos " + currentPosition + " >= file size " + fileSize);
             return null;
         } else { // when we read only a part of file we should skip the last incomplete line
             if (currentPosition + nextBytesWithoutEOL >= fileSize && fileSize < totalFileSize) {
-                System.out.println("skipping last  " + nextBytesWithoutEOL + " bytes when cur pos "
+                log.println("skipping last  " + nextBytesWithoutEOL + " bytes when cur pos "
                     + currentPosition + ", file size limit " + fileSize);
                 return null;
             }

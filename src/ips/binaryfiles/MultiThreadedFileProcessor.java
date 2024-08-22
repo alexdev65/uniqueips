@@ -3,6 +3,7 @@ package ips.binaryfiles;
 import ips.StopException;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
@@ -15,13 +16,16 @@ public class MultiThreadedFileProcessor implements FileProcessor {
     private final ChunkProcessorFactory processorFactory;
     private final int timeoutSec;
     private final long fileSizeLimit;
+    private final PrintStream log;
 
-    public MultiThreadedFileProcessor(int bufferSize, int numThreads, ChunkProcessorFactory processorFactory, int timeoutSec, long fileSizeLimit) {
+    public MultiThreadedFileProcessor(int bufferSize, int numThreads, ChunkProcessorFactory processorFactory,
+                                      int timeoutSec, long fileSizeLimit, PrintStream log) {
         this.bufferSize = bufferSize;
         this.numThreads = numThreads;
         this.processorFactory = processorFactory;
         this.timeoutSec = timeoutSec;
         this.fileSizeLimit = fileSizeLimit;
+        this.log = log;
     }
 
     @Override
@@ -31,7 +35,7 @@ public class MultiThreadedFileProcessor implements FileProcessor {
         try (FileChannel fileChannel = FileChannel.open(Paths.get(filePath), StandardOpenOption.READ)) {
             try {
                 var chunkReader =
-                        new FileChunkReader(fileChannel, bufferSize, fileSizeLimit);
+                        new FileChunkReader(fileChannel, bufferSize, fileSizeLimit, log);
 
                 for (int threadNo = 0; threadNo < numThreads; threadNo++) {
                     taskManager.submitTask(processorFactory.createProcessor(chunkReader));
@@ -39,14 +43,11 @@ public class MultiThreadedFileProcessor implements FileProcessor {
 
                 taskManager.awaitCompletion();
 
-            } catch (StopException stopException) {
-                System.out.println("Stop exception caught in processor");
             } catch (Exception e) {
-                System.out.println("Exception " + e);
                 if (e.getCause() instanceof StopException || e.getCause() instanceof ClosedByInterruptException) {
-                    System.out.println("Stop exception caught in processor");
+                    log.println("Stop exception caught in processor");
                 } else {
-                    System.out.println("Unexpected exception " + e);
+                    log.println("Unexpected exception " + e);
                 }
             } finally {
                 taskManager.shutdownGracefully();

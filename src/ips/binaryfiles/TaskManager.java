@@ -16,7 +16,7 @@ public class TaskManager {
     public TaskManager(int numThreads, int timeoutSec) {
         this.executorService = Executors.newFixedThreadPool(numThreads, r -> {
             Thread thread = new Thread(r);
-            thread.setUncaughtExceptionHandler((t, e) -> System.out.println("Uncaught exception: " + e.getMessage()));
+            thread.setUncaughtExceptionHandler((t, e) -> System.err.println("Uncaught exception: " + e.getMessage() + ", in thread " + t.getName()));
             return thread;
         });
         this.timeoutSec = timeoutSec;

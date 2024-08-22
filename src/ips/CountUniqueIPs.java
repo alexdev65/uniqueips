@@ -3,6 +3,7 @@ package ips;
 import ips.binaryfiles.*;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -21,7 +22,7 @@ public class CountUniqueIPs {
         decimalFormatWithThousands = new DecimalFormat("####,###", symbols);
     }
 
-    public static void main(String[] args) {
+    public static class Settings {
 
         // Custom settings
         int bufferSize = 10 * 1024 * 1024; //< file read buffer size in bytes
@@ -31,9 +32,21 @@ public class CountUniqueIPs {
         long fileSizeLimit = maxLines * 120L / 7L; //< only needed if we want to limit number of bytes to read
         int timeoutSec = 3600; //< processing timeout
 
+    }
+
+    public static void main(String[] args) {
+        String fileName = args[0];
+
+        Settings settings = new Settings();
+        PrintStream log = System.out;
+        new CountUniqueIPs().countFromFile(fileName, settings, log);
+    }
+
+    public long countFromFile(String fileName, Settings settings, PrintStream log) {
+        //Settings settings = new Settings();
         Supplier<IpSetLongSavable> ipSetSupplier = IpSetLongSavable::new;
         var ipv4Set = ipSetSupplier.get();
-        var stat = new Stat(maxLines);
+        var stat = new Stat(settings.maxLines, log);
         var ipParser = new IpParser();
         var totalLines = new AtomicLong();
         ChunkProcessorFactory processorFactory = (byteBufferProvider) -> new
@@ -41,13 +54,12 @@ public class CountUniqueIPs {
                 //CustomChunkProcessorLinesCountOnly(byteBufferProvider, totalLines, stat);
                 CustomChunkProcessorArray(byteBufferProvider, totalLines, ipv4Set, stat, ipParser);
 
-                FileProcessor fileProcessor = numThreads == 0 ?
-                new SingleThreadedFileProcessor(bufferSize, processorFactory, fileSizeLimit) :
-                new MultiThreadedFileProcessor(bufferSize, numThreads, processorFactory, timeoutSec, fileSizeLimit);
+        FileProcessor fileProcessor = settings.numThreads == 0 ?
+                new SingleThreadedFileProcessor(settings.bufferSize, processorFactory, settings.fileSizeLimit, log) :
+                new MultiThreadedFileProcessor(settings.bufferSize, settings.numThreads, processorFactory, settings.timeoutSec, settings.fileSizeLimit, log);
 
 
         try {
-            String fileName = args[0];
 
             Runtime runtime = Runtime.getRuntime();
             long startTime = System.nanoTime();
@@ -56,35 +68,36 @@ public class CountUniqueIPs {
             fileProcessor.processFile(fileName);
 
             double elapsed = ((double)(System.nanoTime() - startTime)) / 1e9;
-            System.out.println("Total lines = " + decimalFormatWithThousands.format(totalLines.get()) +
+            log.println("Total lines = " + decimalFormatWithThousands.format(totalLines.get()) +
                     ", elapsed = " + elapsed);
 
-            long unique = printRecalcUniqueCount(ipv4Set);
+            long unique = printRecalcUniqueCount(ipv4Set, log);
             //ipv4Set.printAll("app3");
-            gcAndPrint(runtime);
+            gcAndPrint(runtime, log);
 
             long usedMem = runtime.totalMemory() - runtime.freeMemory();
-            System.out.printf("Unique = %s, elapsed = %.6f s, used mem = %.3f Mb%n",
+            log.printf("Unique = %s, elapsed = %.6f s, used mem = %.3f Mb%n",
                     decimalFormatWithThousands.format(unique), elapsed, ((double)usedMem) / 1e9);
 
+            return unique;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static void gcAndPrint(Runtime runtime) {
+    private static void gcAndPrint(Runtime runtime, PrintStream log) {
         runtime.gc();
         long totalMem = runtime.totalMemory();
         long freeMem = runtime.freeMemory();
-        System.out.printf("Memory after gc: used = %dM, total = %dM, free = %dM%n",
+        log.printf("Memory after gc: used = %dM, total = %dM, free = %dM%n",
                 (totalMem - freeMem) / 1_000_000, totalMem / 1_000_000, freeMem / 1_000_000);
     }
 
-    public static synchronized long printRecalcUniqueCount(IpSet ipSet) {
+    public static synchronized long printRecalcUniqueCount(IpSet ipSet, PrintStream log) {
         long recalcStartTime = System.nanoTime();
         long uniqueRecalc = ipSet.calcUnique();
         long recalcElapsed = System.nanoTime() - recalcStartTime;
-        System.out.printf("Recalculated uniques = %s, time = %.3s%n",
+        log.printf("Recalculated uniques = %s, time = %.3s%n",
                 decimalFormatWithThousands.format(uniqueRecalc), recalcElapsed / 1e9);
         return uniqueRecalc;
     }

@@ -74,7 +74,6 @@ public class CustomChunkProcessorArray extends ChunkProcessor {
     private void processLine() {
         int[] octets = ipv4.octets;
         ipParser.ipToOctetsFast(octets, lineBytes, 0, lineLength);
-        //ipSet.add(ipv4);
         ips[ipsLen++] = (octets[0] << 24) + (octets[1] << 16) + (octets[2] << 8) + octets[3];
         lines++;
     }
@@ -87,6 +86,6 @@ public class CustomChunkProcessorArray extends ChunkProcessor {
     protected void finished() {
         totalLines.addAndGet(lines);
         globalSet.add(ips, ipsLen);
-        System.out.println("Thread " + Thread.currentThread().getName() + " finished. lines = " + lines);
+        //System.out.println("Thread " + Thread.currentThread().getName() + " finished. lines = " + lines);
     }
 }

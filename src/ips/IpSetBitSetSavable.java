@@ -9,14 +9,6 @@ import java.util.stream.Collectors;
 
 public class IpSetBitSetSavable extends IpSetBitSet {
 
-    public synchronized long printRecalcUniqueCount() {
-        long recalcStartTime = System.nanoTime();
-        long uniqueRecalc = calcUnique();
-        long recalcElapsed = System.nanoTime() - recalcStartTime;
-        System.out.printf("Recalculated uniques = %d, time = %.3s%n", uniqueRecalc, recalcElapsed / 1e9);
-        return uniqueRecalc;
-    }
-
     public synchronized void print(PrintStream printStream) {
         for (int i = 0, ipSetLength = ipSet.length; i < ipSetLength; i++) {
             BitSet[] set8 = ipSet[i];

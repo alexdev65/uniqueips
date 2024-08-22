@@ -80,7 +80,7 @@ public class CustomChunkProcessor extends ChunkProcessor {
     protected void finished() {
         totalLines.addAndGet(lines);
         globalSet.merge(ipSet);
-        System.out.println("Thread " + Thread.currentThread().getName() + " finished. lines = " + lines +
-                ", unique IPs in thread = " + ipSet.calcUnique());
+//        System.out.println("Thread " + Thread.currentThread().getName() + " finished. lines = " + lines +
+//                ", unique IPs in thread = " + ipSet.calcUnique());
     }
 }
