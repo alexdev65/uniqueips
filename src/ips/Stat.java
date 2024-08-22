@@ -9,7 +9,7 @@ public class Stat {
     private final Runtime runtime = Runtime.getRuntime();
     private long lineCount = 0;
     private long lastReportLineCount = 0;
-    private long startTime = System.nanoTime();
+    private final long startTime = System.nanoTime();
     private long prevTime = startTime;
     // defines how often current stats will be logged
     private final long linesPeriod = 1_000_000;

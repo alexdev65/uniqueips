@@ -1,6 +1,12 @@
 package ips;
 
-import ips.binaryfiles.*;
+import ips.binaryfiles.ChunkProcessorFactory;
+import ips.binaryfiles.CustomChunkProcessorArray;
+import ips.binaryfiles.CustomChunkProcessorIpSet;
+import ips.binaryfiles.CustomChunkProcessorLinesCountOnly;
+import ips.binaryfiles.FileProcessor;
+import ips.binaryfiles.MultiThreadedFileProcessor;
+import ips.binaryfiles.SingleThreadedFileProcessor;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -27,11 +33,12 @@ public class CountUniqueIPs {
         // number of additional threads, >= 0. Zero means single threading
         int numThreads = Runtime.getRuntime().availableProcessors() * 2;
 
-        // only needed if we want to limit number of lines to read, at least this number of lines will be read:
-        final long maxLines = 300_000_000L;
+        // only needed if we want to limit the number of lines to read, at least this number of lines will be read:
+        final long maxLines = 200_000_000_000L;
 
         final int AVG_BYTES_PER_LINE = 14;
-        // only needed if we want to limit number of bytes to reaВ (by default it exceeds expected max lines bytes)
+        // only needed if we want to limit the number of bytes to read
+        // (by default it exceeds the expected maxLines bytes, which makes this limit essentially inactive)
         long fileSizeLimit = maxLines * (AVG_BYTES_PER_LINE + 3);
 
         int timeoutSec = 3600; //< processing timeout
@@ -53,6 +60,7 @@ public class CountUniqueIPs {
         new CountUniqueIPs().countFromFile(fileName, settings, log);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public long countFromFile(String fileName, Settings settings, PrintStream log) {
         //Settings settings = new Settings();
         Supplier<IpSetLongSavable> ipSetSupplier = IpSetLongSavable::new;
@@ -64,7 +72,6 @@ public class CountUniqueIPs {
             case IP_SET -> new CustomChunkProcessorIpSet(byteBufferProvider, ipv4Set, stat, ipParser, ipSetSupplier);
             case LINE_COUNT_ONLY -> new CustomChunkProcessorLinesCountOnly(byteBufferProvider, totalLines, stat);
             case ARRAY -> new CustomChunkProcessorArray(byteBufferProvider, ipv4Set, stat, ipParser);
-            default -> throw new RuntimeException("Unsupported chunk processor choice " + settings.chunkProcessorChoice);
         };
 
         FileProcessor fileProcessor = settings.numThreads == 0 ?

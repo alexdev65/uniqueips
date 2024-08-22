@@ -6,6 +6,8 @@ The file must have the following format: lines are separated by LF, and each lin
 
 It's written in pure Java (16+) without any external libraries.
 
+In my experiments, it could fully utilize the SSD read speed (~750Mbytes/s) and maximum RAM consumption was around 800M.
+
 There are several implementations of some of the classes and methods. 
 Some of the most optimized implementations don't check the format correctness. There are also some settings that can be configured in the main file, such as bufferSize, numThreads, etc.
 

@@ -1,7 +1,5 @@
 package ips.binaryfiles;
 
-import ips.IpParser;
-import ips.IpSetLong;
 import ips.Stat;
 
 import java.nio.ByteBuffer;
@@ -11,8 +9,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * Only calculates number of lines. Useful to compare performance.
  */
 public class CustomChunkProcessorLinesCountOnly extends ChunkProcessor {
-    private byte sum = 0;
-    private long cnt = 0;
     private long lines = 0;
     private final AtomicLong totalLines;
     private final Stat stat;
