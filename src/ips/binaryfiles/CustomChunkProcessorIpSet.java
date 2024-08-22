@@ -5,7 +5,6 @@ import ips.IpSet;
 import ips.Stat;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
@@ -16,10 +15,10 @@ public class CustomChunkProcessorIpSet extends CustomChunkProcessorBase {
     private IpSet ipSet;
     private final Supplier<? extends IpSet> ipSetSupplier;
 
-    public CustomChunkProcessorIpSet(ByteBufferProvider byteBufferProvider, AtomicLong totalLines,
+    public CustomChunkProcessorIpSet(ByteBufferProvider byteBufferProvider,
                                      IpSet globalSet, Stat stat, IpParser ipParser,
                                      Supplier<? extends IpSet> ipSetSupplier) {
-        super(byteBufferProvider, totalLines, globalSet, stat, ipParser);
+        super(byteBufferProvider, globalSet, stat, ipParser);
         this.ipSetSupplier = ipSetSupplier;
         clearSet();
     }

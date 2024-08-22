@@ -53,7 +53,7 @@ public class IpSetBitSet implements IpSet {
     }
 
     @Override
-    public long getCachedUniqueCount() {
+    public synchronized long getCachedUniqueCount() {
         return uniqueCount;
     }
 

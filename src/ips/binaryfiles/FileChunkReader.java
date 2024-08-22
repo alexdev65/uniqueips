@@ -31,11 +31,11 @@ public class FileChunkReader implements ByteBufferProvider {
     @Override
     public synchronized MappedByteBuffer getNextBuffer() throws IOException {
         if (currentPosition >= fileSize) {
-            log.println("cur pos " + currentPosition + " >= file size " + fileSize);
+            log.println("Current file position " + currentPosition + " >= expected file size " + fileSize);
             return null;
         } else { // when we read only a part of file we should skip the last incomplete line
             if (currentPosition + nextBytesWithoutEOL >= fileSize && fileSize < totalFileSize) {
-                log.println("skipping last  " + nextBytesWithoutEOL + " bytes when cur pos "
+                log.println("Skipping last  " + nextBytesWithoutEOL + " bytes when cur pos "
                     + currentPosition + ", file size limit " + fileSize);
                 return null;
             }
@@ -50,7 +50,7 @@ public class FileChunkReader implements ByteBufferProvider {
         if (lastEOLIndex != -1) {
             nextBytesWithoutEOL = buffer.limit() - lastEOLIndex - 1;
             buffer.limit(lastEOLIndex + 1); // Set the limit to include the last '\n'
-        } else { // file has incorrect format
+        } else { // file has incorrect format or buffer is too small
             boolean notEOF = currentPosition + buffer.limit() < totalFileSize;
             if (notEOF) {
                 throw new RuntimeException("No EOL found in buffer that starts from " + currentPosition

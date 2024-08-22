@@ -2,11 +2,9 @@ package ips.binaryfiles;
 
 import ips.IpParser;
 import ips.IpSet;
-import ips.Ipv4;
 import ips.Stat;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * See CustomChunkProcessorBase.
@@ -19,9 +17,9 @@ public class CustomChunkProcessorArray extends CustomChunkProcessorBase {
     // Number of elements in the array
     private int ipsLen = 0;
 
-    public CustomChunkProcessorArray(ByteBufferProvider byteBufferProvider, AtomicLong totalLines,
+    public CustomChunkProcessorArray(ByteBufferProvider byteBufferProvider,
                                      IpSet globalSet, Stat stat, IpParser ipParser) {
-        super(byteBufferProvider, totalLines, globalSet, stat, ipParser);
+        super(byteBufferProvider, globalSet, stat, ipParser);
         clearSet();
     }
 

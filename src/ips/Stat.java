@@ -6,12 +6,13 @@ import java.io.PrintStream;
  * Keeps statistics for the data being processed. Stops processing when maximum number of lines is reached.
  */
 public class Stat {
-    Runtime runtime = Runtime.getRuntime();
-    long lineCount = 0;
-    long lastReportLineCount = 0;
-    long startTime = System.nanoTime();
-    long prevTime = startTime;
-    final long linesPeriod = 1_000_000;
+    private final Runtime runtime = Runtime.getRuntime();
+    private long lineCount = 0;
+    private long lastReportLineCount = 0;
+    private long startTime = System.nanoTime();
+    private long prevTime = startTime;
+    // defines how often current stats will be logged
+    private final long linesPeriod = 1_000_000;
     private final long maxLines;
     private final PrintStream log;
 
@@ -39,5 +40,9 @@ public class Stat {
                 throw new StopException();
             }
         }
+    }
+
+    public long getLineCount() {
+        return lineCount;
     }
 }

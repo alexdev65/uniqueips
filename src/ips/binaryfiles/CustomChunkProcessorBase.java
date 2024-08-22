@@ -6,7 +6,6 @@ import ips.Ipv4;
 import ips.Stat;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Each chunk (of file) is processed here and all IPs are merged to the global IP set
@@ -14,7 +13,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public abstract class CustomChunkProcessorBase extends ChunkProcessor {
     protected long lines = 0;
-    private final AtomicLong totalLines;
     protected final IpSet globalSet;
     private final Stat stat;
     protected final IpParser ipParser;
@@ -23,10 +21,9 @@ public abstract class CustomChunkProcessorBase extends ChunkProcessor {
     protected int lineLength = 0;
     protected final Ipv4 ipv4 = new Ipv4();
 
-    public CustomChunkProcessorBase(ByteBufferProvider byteBufferProvider, AtomicLong totalLines,
+    public CustomChunkProcessorBase(ByteBufferProvider byteBufferProvider,
                                     IpSet globalSet, Stat stat, IpParser ipParser) {
         super(byteBufferProvider);
-        this.totalLines = totalLines;
         this.globalSet = globalSet;
         this.stat = stat;
         this.ipParser = ipParser;
@@ -58,7 +55,7 @@ public abstract class CustomChunkProcessorBase extends ChunkProcessor {
         }
         syncToGlobalSet();
         clearSet();
-        stat.update(lines - savedLines, 0);
+        stat.update(lines - savedLines, globalSet.getCachedUniqueCount());
     }
 
 

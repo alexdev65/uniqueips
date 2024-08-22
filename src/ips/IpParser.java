@@ -7,12 +7,14 @@ import java.nio.charset.StandardCharsets;
  */
 public class IpParser {
 
+    // primitive slow parsing to int
     public int ipToInt(String ip) {
         String[] split = ip.split("\\.");
         return (Integer.parseInt(split[0]) << 24) + (Integer.parseInt(split[1]) << 16) +
                 (Integer.parseInt(split[2]) << 8) + Integer.parseInt(split[3]);
     }
 
+    // Parses string of characters without error checking
     public void ipToOctetsFast(int[] nums, char[] chars, int start, int end) {
         nums[0] = nums[1] = nums[2] = nums[3] = 0;
         int cNo = start;
@@ -27,8 +29,8 @@ public class IpParser {
         }
     }
 
+    // The fastest way to parse IP v4 address from string (bytes). No error checking.
     public void ipToOctetsFast(int[] nums, byte[] bytes, int start, int end) {
-        //nums[0] = nums[1] = nums[2] = nums[3] = 0;
         nums[0] = bytes[start] - '0';
 
         int nNo = 0;
@@ -42,6 +44,7 @@ public class IpParser {
         }
     }
 
+    // Safe way to parse IP v4 address
     public void ipToOctetsSafe(int[] nums, byte[] bytes, int start, int end) {
         try {
             nums[0] = nums[1] = nums[2] = nums[3] = 0;

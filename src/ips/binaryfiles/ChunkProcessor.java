@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
 /**
- * Obtains the next buffer (chunk of data), processes it and cleans it
+ * Continuously obtains the next buffer (chunk of data), processes it and cleans it, then repeats
  */
 public abstract class ChunkProcessor implements Runnable {
     private final ByteBufferProvider byteBufferProvider;

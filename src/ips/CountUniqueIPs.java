@@ -21,9 +21,9 @@ public class CountUniqueIPs {
         LINE_COUNT_ONLY,
     }
 
+    // Custom settings
     public static class Settings {
 
-        // Custom settings
         int bufferSize = 10 * 1024 * 1024; //< file read buffer size in bytes
         int numThreads = Runtime.getRuntime().availableProcessors() * 2; //< number of additional threads, >= 0
         // only needed if we want to limit number of lines to read, at least this number of lines will be read:
@@ -50,9 +50,9 @@ public class CountUniqueIPs {
         var ipParser = new IpParser();
         var totalLines = new AtomicLong();
         ChunkProcessorFactory processorFactory = (byteBufferProvider) -> switch (settings.chunkProcessorChoice) {
-            case IP_SET -> new CustomChunkProcessorIpSet(byteBufferProvider, totalLines, ipv4Set, stat, ipParser, ipSetSupplier);
+            case IP_SET -> new CustomChunkProcessorIpSet(byteBufferProvider, ipv4Set, stat, ipParser, ipSetSupplier);
             case LINE_COUNT_ONLY -> new CustomChunkProcessorLinesCountOnly(byteBufferProvider, totalLines, stat);
-            case ARRAY -> new CustomChunkProcessorArray(byteBufferProvider, totalLines, ipv4Set, stat, ipParser);
+            case ARRAY -> new CustomChunkProcessorArray(byteBufferProvider, ipv4Set, stat, ipParser);
             default -> throw new RuntimeException("Unsupported chunk processor choice " + settings.chunkProcessorChoice);
         };
 
@@ -70,7 +70,7 @@ public class CountUniqueIPs {
             fileProcessor.processFile(fileName);
 
             double elapsed = ((double)(System.nanoTime() - startTime)) / 1e9;
-            log.println("Total lines = " + Utils.decimalFormatWithThousands.format(totalLines.get()) +
+            log.println("Total lines = " + Utils.decimalFormatWithThousands.format(stat.getLineCount()) +
                     ", elapsed = " + elapsed);
 
             long unique = printRecalcUniqueCount(ipv4Set, log);

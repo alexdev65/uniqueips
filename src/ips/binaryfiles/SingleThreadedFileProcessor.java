@@ -27,8 +27,7 @@ public class SingleThreadedFileProcessor implements FileProcessor {
 
         try (FileChannel fileChannel = FileChannel.open(Paths.get(filePath), StandardOpenOption.READ)) {
             try {
-                var chunkReader =
-                        new FileChunkReader(fileChannel, bufferSize, fileSizeLimit, log);
+                var chunkReader = new FileChunkReader(fileChannel, bufferSize, fileSizeLimit, log);
 
                 processorFactory.createProcessor(chunkReader).run();
 

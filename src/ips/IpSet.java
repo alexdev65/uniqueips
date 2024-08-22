@@ -7,6 +7,7 @@ public interface IpSet {
     // add IP to set
     void add(Ipv4 ip);
 
+    // add multiple IPs from array
     default void add(int[] ips, int ipsLen) {
         Ipv4 ip = new Ipv4();
         int[] octets = ip.octets;
